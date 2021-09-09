@@ -560,12 +560,12 @@ MCTS는 시간이 허락하는 한도 내에서 이 과정을 계속 반복하�
 ![image-20210907220829817](Image\AlphaGo_1.png)
 
  	1. Selection : 현재 상태에서 Q + u가 가장 큰 지점을 고릅니다.
-     * Q : MCTS의 action-value 값, 클 수록 승리 확률이 높아집니다.
-     * u : Policy Network과 node 방문 횟수 등에 의해 결정되는 값 입니다.
-	2. Expansion : 방문 횟수가 40회가 넘으면 child를 expand합니다.
-	3. Evaluation : Value network와 Fast rollout 이라는 두 가지 방법을 사용해 reward를 계산합니다.
-	4. Backup : 시작 지점부터 마지막 leaf node 까지 모든 edge의 parameter를 갱신합니다.
-	5. 1 ~ 4를 시간의 한도 내에서 계속 반복하다가, 가장 많이 방문한 node를 선택합니다.
+ 	 * Q : MCTS의 action-value 값, 클 수록 승리 확률이 높아집니다.
+ 	 * u : Policy Network과 node 방문 횟수 등에 의해 결정되는 값 입니다.
+ 	2. Expansion : 방문 횟수가 40회가 넘으면 child를 expand합니다.
+ 	3. Evaluation : Value network와 Fast rollout 이라는 두 가지 방법을 사용해 reward를 계산합니다.
+ 	4. Backup : 시작 지점부터 마지막 leaf node 까지 모든 edge의 parameter를 갱신합니다.
+ 	5. 1 ~ 4를 시간의 한도 내에서 계속 반복하다가, 가장 많이 방문한 node를 선택합니다.
 
 ### Supervised Learning of Policy Network (SL Policy Network)
 
@@ -611,31 +611,148 @@ SL policy network와 RL policy network가 경쟁할 경우, 거의 80% 이상의
 
 ### Reinforcement Learning of Value Networks
 
-Value network는 evaluation 단계에서 사용하는 네트워크로, position s와 policy p가 주어졌을 때, value function 를 predict 하는 
+​	Value network는 evaluation 단계에서 사용하는 네트워크로, position s와 policy p가 주어졌을 때, value function 를 predict 하는 
 
-네트워크입니다. 
+​	네트워크입니다. 
 
 ![image-20210907223005687](Image\AlphaGo_3.png)
 
-하지만 바둑에 최적의 수를 모르기 때문에 AlphaGo는 가장 우수한 policy인 RL policy network를 사용해 optimal value function을
+​	하지만 바둑에 최적의 수를 모르기 때문에 AlphaGo는 가장 우수한 policy인 RL policy network를 사용해 optimal value function을
 
-approximation합니다. 
+​	approximation합니다. 
 
-Value network는 policy network와 비슷한 구조를 띄고 있지만, 마지막 output layer으로 모든 기보가 아닌 single probability 
+​	Value network는 policy network와 비슷한 구조를 띄고 있지만, 마지막 output layer으로 모든 기보가 아닌 single probability 
 
-distribution을 사용합니다.
+​	distribution을 사용합니다.
 
 
 
-또한 Overfitting 문제를 해결하기 위해 3천만개의 데이터를 RL policy network들끼리의 자가대국을 통해 만들어낸 다음 그 결과를 다시 
+​	또한 Overfitting 문제를 해결하기 위해 3천만개의 데이터를 RL policy network들끼리의 자가대국을 통해 만들어낸 다음 
 
-또 value network를 learning하는 데에 사용합니다. 그래서 training error 0.19, test error 0.37로 overfitting 되었던 네트워크가 
+​	그 결과를 다시 또 value network를 learning하는 데에 사용합니다. 그래서 training error 0.19, test error 0.37로 overfitting
 
-training error 0.226, test error 0.234로 훨씬 더 일반화 된 네트워크로 학습이 되었습니다.
+​	되었던 네트워크가 training error 0.226, test error 0.234로 훨씬 더 일반화 된 네트워크로 학습이 되었습니다.
 
 
 
 ![image-20210907223609155](Image\AlphaGo_4.png)
 
-RL policy를 사용하는 것이 훨씬 높은 우수한 결과를 내는것을 볼 수 있습니다.
+​	RL policy를 사용하는 것이 훨씬 높은 우수한 결과를 내는것을 볼 수 있습니다.
 
+## Optimization
+
+### 	Gradient descent
+
+#### 		Batch gradient descent
+
+​			BGD 전체 데이터 셋에 대한 에러를 구한 뒤 기울기를 한번만 계산하여 모델의 parameter 를 업데이트 하는 방법입니다.
+
+​			장점		
+
+​				전체 데이터에 대해 업데이트가 한번에 이루어지기 때문에 후술할 SGD 보다 업데이트 횟수가 적습니다. 
+
+​				전체 데이터에 대해 error gradient 를 계산하기 때문에 수렴이 안정적으로 됩니다.
+
+​				병렬 처리에 유리합니다.
+
+​			단점
+
+​				한 스텝에 모든 학습 데이터 셋을 사용하므로 학습이 오래 걸립니다.
+
+​				전체 학습 데이터에 대한 error 를 모델의 업데이트가 이루어지기 전까지 축적해야 하므로 더 많은 메모리가 필요합니다.
+
+​				local optimal 상태가 되면 빠져나오기 힘듦
+
+			#### 		Stochastic gradient descent
+
+​			추출된 데이터 한 개에 대해서 error gradient 를 계산하고, Gradient descent 알고리즘을 적용하는 방법입니다.
+
+​			![image-20210909225341879](Image\SGD_1.png)
+
+​			장점
+
+​				위 그림에서 보이듯이 Shooting 이 일이나기 때문에 local optimal 에 빠질 리스크가 적다.
+
+​				step 에 걸리는 시간이 짧아서 수렴속도가 빠릅니다.
+
+​			단점
+
+​				Global optimal 을 찾지 못 할 수도 있습니다.
+
+​				데이터를 한개씩 처리하기에 GPU의 성능을 전부 활용할 수 없습니다.
+
+#### 		Mini-batch gradient descent
+
+​			![image-20210909230138709](Image\MSGD_1.png)
+
+​			전체 데이터셋에서 뽑은 Mini-batch 안의 데이터 m 개에 대해서 각 데이터에 대한 기울기를 m 개 구한 뒤, 그것의 평균 기울기를
+
+​			통해서 모델을 업데이트 하는 방법입니다.
+
+
+
+​			전체 데이터 셋을 여러개의 mini-batch로 나누어 한 개의 mini-batch 마다 기울기를 구하고 모델을 업데이트 하는 것 입니다.
+
+​			예를 들어 전체 데이터가 1000개 인데 batch size 를 10으로 하면 100개의 mini-batch가 생성이 되는 것으로 100 iteration 동안
+
+​			모델이 업데이트 되며 1 epoch 가 끝납니다.
+
+
+
+​			장점
+
+​				BGD 보다 local optimal 에 빠질 리스크가 적습니다.
+
+​				SGD 보다 병렬처리에 유리합니다.
+
+​				전체 학습데이터가 아닌 일부분의 학습데이터만 사용하기 때문에 메모리 사용히 BGD 보다 적습니다.
+
+​			단점
+
+​				에러에 대한 정보를 mini-batch 크기 만큼 축적해서 계산하기 때문에 SGD 보다 메모리 사용이 높습니다.
+
+​			batch size 는 2의 거듭제곱으로 해주는 것이 좋습니다. GPU의 메모리가 2의 거듭제곱 이라 batch size 를 2의 거듭제곱으로
+
+​			해주는 것이 효율에 좋습니다.
+
+###		Momentum
+
+​		Momentum 은 Gradient descent 기반의 optimization algorithm 입니다. 
+
+​																								![image-20210909231223312](Image\Momentum_1.png)
+
+​		L : loss function value
+
+​		W : weights
+
+​		η : learning rate
+
+​		α : 가속도 같은 역할을 하는 hyper parameter
+
+​																						![image-20210909231404523](Image\Momentum_2.png)
+
+​		첫 번째 스텝의 기울기가 5, 두 번째 스텝의 기울기가 3인 경우 학습률이 0.1 일때 가중치는 -0.3 만큼 변화합니다.
+
+​		Momentum을 적용하면
+
+​																		![](Image\Momentum_3.png)																																	
+
+​		일반적인 GD 보다 두번째 스텝에서 -0.45 만큼 가중치가 더 변화하는 것을 알 수 있습니다.
+
+​																![		](Image\Momentum_4.png)		
+
+​		GD 를 사용했다면 갔을 거리보다 Momentum 을 사용했을 때 이동하려던 방향으로 스텝을 더 멀리 뻗습니다.
+
+​	![image-20210909231714807](Image\Momentum_5.png)
+
+​		Momentum 은 아래 그림처럼 실제 공이 굴러가듯이 가중치가 이동하게 됩니다.
+
+#### 		Nesterov Accelerated Gradient
+
+#### 					AdaGrad
+
+#### 		Adadelta
+
+	#### 		RMSprop
+
+#### 		Adam
