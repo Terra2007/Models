@@ -1,6 +1,6 @@
 ## CNN Convolutional Neural Network
 
-![CNN](Image\CNN.png)
+![CNN](./Image\CNN.png)
 
 CNN은 **Convolutions** 과 **Subsampling** 레이어로 구성이 되어 **Convolutions, Subsampling** 레이어가 반복 되다가 마지막에
 
